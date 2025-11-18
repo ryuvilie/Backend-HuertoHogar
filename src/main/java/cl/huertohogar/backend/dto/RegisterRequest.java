@@ -1,6 +1,8 @@
 package cl.huertohogar.backend.dto;
 
 import cl.huertohogar.backend.model.Rol;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,8 +17,9 @@ public class RegisterRequest {
     // Nombre del usuario (se muestra luego en la interfaz)
     private String nombre;
 
-    // Correo electrónico (único por usuario)
-    private String correo;
+    @NotBlank(message = "El correo es obligatorio.")
+    @Email(message = "Debe ingresar un correo válido.")
+    private String correo;   // o email, según tu modelo
 
     // Contraseña en texto plano (se cifrará antes de guardar)
     private String clave;

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import cl.huertohogar.backend.dto.*;
 import cl.huertohogar.backend.service.AuthService;
+import jakarta.validation.Valid;
 
 /**
  * Controlador público para:
@@ -37,7 +38,7 @@ public class AuthController {
      * Recibe nombre + correo + clave + rol → crea usuario → devuelve token
      */
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest req) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest req) {
         return ResponseEntity.ok(authService.register(req));
     }
 }
