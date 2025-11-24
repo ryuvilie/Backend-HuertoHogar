@@ -94,6 +94,7 @@ public class SecurityConfig {
 
                 // --- RUTAS EXCLUSIVAS PARA ADMIN ---
                 // Solo un usuario con rol ADMIN puede:
+                .requestMatchers("GET", "/api/productos/**").permitAll()
                 .requestMatchers("POST",   "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers("PUT",    "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers("DELETE", "/api/productos/**").hasRole("ADMIN")
