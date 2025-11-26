@@ -24,5 +24,7 @@ public class Producto {
     @Column(nullable = false)
     private Integer stock;
 
+    private String imageUrl;
+
     private String categoria;
 }
