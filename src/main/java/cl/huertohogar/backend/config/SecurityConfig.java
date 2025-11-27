@@ -64,6 +64,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST,   "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT,    "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
+                .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
 
                 // --- CUALQUIER OTRA RUTA REQUIERE TOKEN ---
                 .anyRequest().authenticated()
