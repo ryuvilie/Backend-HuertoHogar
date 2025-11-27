@@ -18,7 +18,7 @@ public class CarritoService {
     private final ItemCarritoRepository itemRepo;
     private final ProductoRepository productoRepo;
 
-    // 🆕 Repos de ventas (los necesito para completar)
+    // Repos de ventas
     private final VentaRepository ventaRepo;
     private final DetalleVentaRepository detalleVentaRepo;
 
@@ -26,7 +26,6 @@ public class CarritoService {
     // 🟩 Obtener o crear el único carrito del sistema
     // ----------------------------------------------------
     public Carrito getOrCreateCarrito() {
-
         return carritoRepo.findAll()
                 .stream()
                 .findFirst()
@@ -40,6 +39,7 @@ public class CarritoService {
     // ----------------------------------------------------
     // 🟩 Agregar producto al carrito
     // ----------------------------------------------------
+    @Transactional
     public void addToCart(Long idProducto, int cantidad) {
 
         Carrito carrito = getOrCreateCarrito();
@@ -81,16 +81,30 @@ public class CarritoService {
     // ----------------------------------------------------
     // 🟩 Eliminar ítem individual
     // ----------------------------------------------------
+    @Transactional
     public void removeItem(Long idItem) {
         itemRepo.deleteById(idItem);
+
+        // Recalcular total después de eliminar
+        Carrito carrito = getOrCreateCarrito();
+        actualizarTotal(carrito);
     }
 
     // ----------------------------------------------------
     // 🟩 Vaciar carrito completo
     // ----------------------------------------------------
+    @Transactional
     public void clearCarrito() {
+
         Carrito carrito = getOrCreateCarrito();
-        itemRepo.deleteAllByCarrito(carrito);
+
+        // 1) Traemos los items del carrito
+        List<ItemCarrito> items = itemRepo.findByCarrito(carrito);
+
+        // 2) Los borramos con deleteAll (dentro de la transacción)
+        itemRepo.deleteAll(items);
+
+        // 3) Reseteamos el total y guardamos el carrito
         carrito.setTotal(0.0);
         carritoRepo.save(carrito);
     }
@@ -109,7 +123,7 @@ public class CarritoService {
     }
 
     // =====================================================
-    // 🟦 NUEVO: FINALIZAR COMPRA (Checkout real)
+    // 🟦 FINALIZAR COMPRA (Checkout real)
     // =====================================================
     @Transactional
     public Long finalizarCompra() {
@@ -150,8 +164,8 @@ public class CarritoService {
             detalleVentaRepo.save(dv);
         }
 
-        // 3️⃣ Vaciar carrito
-        itemRepo.deleteAllByCarrito(carrito);
+        // 3️⃣ Vaciar carrito (misma lógica que clearCarrito)
+        itemRepo.deleteAll(items);
         carrito.setTotal(0.0);
         carritoRepo.save(carrito);
 
