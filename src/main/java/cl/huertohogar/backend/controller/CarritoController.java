@@ -39,4 +39,11 @@ public class CarritoController {
         carritoService.clearCarrito();
         return ResponseEntity.ok("Carrito vaciado");
     }
+    // 5️⃣ FINALIZAR COMPRA → genera venta y descuenta stock
+    @PostMapping("/checkout")
+    public ResponseEntity<?> checkout() {
+        Long idVenta = carritoService.finalizarCompra();
+        return ResponseEntity.ok("Compra realizada exitosamente. ID de venta: " + idVenta);
+    }
+
 }

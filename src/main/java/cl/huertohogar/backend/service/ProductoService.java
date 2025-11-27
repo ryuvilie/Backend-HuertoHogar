@@ -16,39 +16,39 @@ import cl.huertohogar.backend.repository.ProductoRepository;
 @RequiredArgsConstructor
 public class ProductoService {
 
-    private final ProductoRepository productoRepository;
+    private final ProductoRepository productoRepo;
 
-    public List<Producto> listar() {
-        return productoRepository.findAll();
+    public List<Producto> getAll() {
+        return productoRepo.findAll();
     }
 
-    public Optional<Producto> buscarPorId(Long id) {
-        return productoRepository.findById(id);
+    public Producto create(Producto producto) {
+        return productoRepo.save(producto);
     }
 
-    public Producto guardar(Producto producto) {
+    public Producto update(Long id, Producto data) {
+        Producto prod = productoRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no existe"));
 
-        // 1) Validar que el precio venga informado
-        if (producto.getPrecio() == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "El precio del producto es obligatorio."
-            );
-        }
+        prod.setNombre(data.getNombre());
+        prod.setDescripcion(data.getDescripcion());
+        prod.setPrecio(data.getPrecio());
+        prod.setStock(data.getStock());
+        prod.setImageUrl(data.getImageUrl());
+        prod.setCategoria(data.getCategoria());
 
-        // 2) Validar que el precio sea mayor que 0
-        if (producto.getPrecio() <= 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "El precio del producto debe ser mayor a 0."
-            );
-        }
-
-        // 3) Si pasa las validaciones, guardar
-        return productoRepository.save(producto);
+        return productoRepo.save(prod);
     }
 
-    public void eliminar(Long id) {
-        productoRepository.deleteById(id);
+    public Producto updateStock(Long id, Integer newStock) {
+        Producto prod = productoRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no existe"));
+
+        prod.setStock(newStock);
+        return productoRepo.save(prod);
+    }
+
+    public void delete(Long id) {
+        productoRepo.deleteById(id);
     }
 }

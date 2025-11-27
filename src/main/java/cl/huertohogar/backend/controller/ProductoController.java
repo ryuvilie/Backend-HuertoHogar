@@ -2,6 +2,7 @@ package cl.huertohogar.backend.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
@@ -10,35 +11,40 @@ import cl.huertohogar.backend.service.ProductoService;
 
 @RestController
 @RequestMapping("/api/productos")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class ProductoController {
 
     private final ProductoService productoService;
 
     @GetMapping
-    public List<Producto> listar() {
-        return productoService.listar();
-    }
-
-    @GetMapping("/{id}")
-    public Producto buscarPorId(@PathVariable Long id) {
-        return productoService.buscarPorId(id).orElse(null);
+    public List<Producto> getAll() {
+        return productoService.getAll();
     }
 
     @PostMapping
-    public Producto guardar(@RequestBody Producto producto) {
-        return productoService.guardar(producto);
+    public Producto create(@RequestBody Producto producto) {
+        return productoService.create(producto);
     }
 
     @PutMapping("/{id}")
-    public Producto actualizar(@PathVariable Long id, @RequestBody Producto producto) {
-        producto.setId_producto(id);
-        return productoService.guardar(producto);
+    public Producto update(
+            @PathVariable Long id,
+            @RequestBody Producto productoUpdate
+    ) {
+        return productoService.update(id, productoUpdate);
+    }
+
+    @PatchMapping("/{id}/stock")
+    public Producto updateStock(
+            @PathVariable Long id,
+            @RequestParam Integer stock
+    ) {
+        return productoService.updateStock(id, stock);
     }
 
     @DeleteMapping("/{id}")
-    public void eliminar(@PathVariable Long id) {
-        productoService.eliminar(id);
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        productoService.delete(id);
+        return ResponseEntity.ok("Producto eliminado");
     }
 }

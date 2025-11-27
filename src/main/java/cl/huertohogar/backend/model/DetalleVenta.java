@@ -5,18 +5,18 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "item_carrito")
-public class ItemCarrito {
+@Table(name = "detalle_venta")
+public class DetalleVenta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_item;
+    private Long id_detalle_venta;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_carrito", nullable = false)
-    private Carrito carrito;
+    @ManyToOne
+    @JoinColumn(name = "id_venta", nullable = false)
+    private Venta venta;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "id_producto", nullable = false)
     private Producto producto;
 
