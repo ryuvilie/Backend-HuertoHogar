@@ -1,16 +1,12 @@
 package cl.huertohogar.backend.service;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
-import lombok.RequiredArgsConstructor;
-
 import cl.huertohogar.backend.model.Producto;
 import cl.huertohogar.backend.repository.ProductoRepository;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,29 +18,30 @@ public class ProductoService {
         return productoRepo.findAll();
     }
 
-    public Producto create(Producto producto) {
-        return productoRepo.save(producto);
+    public Producto create(Producto p) {
+        return productoRepo.save(p);
     }
 
     public Producto update(Long id, Producto data) {
         Producto prod = productoRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no existe"));
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
         prod.setNombre(data.getNombre());
         prod.setDescripcion(data.getDescripcion());
         prod.setPrecio(data.getPrecio());
         prod.setStock(data.getStock());
-        prod.setImageUrl(data.getImageUrl());
         prod.setCategoria(data.getCategoria());
+        prod.setImageUrl(data.getImageUrl());
 
         return productoRepo.save(prod);
     }
 
-    public Producto updateStock(Long id, Integer newStock) {
+    // ✔ CORREGIDO: actualiza solo stock
+    public Producto updateStock(Long id, Integer stock) {
         Producto prod = productoRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no existe"));
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        prod.setStock(newStock);
+        prod.setStock(stock);
         return productoRepo.save(prod);
     }
 

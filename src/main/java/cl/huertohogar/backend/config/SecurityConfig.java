@@ -58,6 +58,7 @@ public class SecurityConfig {
 
                 // --- PRODUCTOS ---
                 // GET productos: público (para catálogo)
+                .requestMatchers(HttpMethod.PATCH, "/api/productos/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
 
                 // POST/PUT/DELETE productos: solo ADMIN
@@ -81,25 +82,28 @@ public class SecurityConfig {
      * Configuración CORS.
      */
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
+public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration config = new CorsConfiguration();
 
-        // Permitir cualquier origen (puerto de emulador, frontend, etc.)
-        config.setAllowedOrigins(List.of("*"));
+    config.setAllowedOrigins(List.of("*"));
 
-        // Métodos HTTP permitidos
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+    config.setAllowedMethods(List.of(
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "OPTIONS"
+    ));
 
-        // Headers permitidos
-        config.setAllowedHeaders(List.of("*"));
+    config.setAllowedHeaders(List.of("*"));
+    config.setAllowCredentials(false);
 
-        // Como usamos JWT en header, no necesitamos credenciales de cookies
-        config.setAllowCredentials(false);
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    return source;
+}
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
 
     /**
      * BCrypt como encriptador de contraseñas.

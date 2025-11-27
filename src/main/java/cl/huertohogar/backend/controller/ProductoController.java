@@ -1,13 +1,13 @@
 package cl.huertohogar.backend.controller;
 
 import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 import cl.huertohogar.backend.model.Producto;
 import cl.huertohogar.backend.service.ProductoService;
+import cl.huertohogar.backend.dto.UpdateStockRequest;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -37,9 +37,9 @@ public class ProductoController {
     @PatchMapping("/{id}/stock")
     public Producto updateStock(
             @PathVariable Long id,
-            @RequestParam Integer stock
+            @RequestBody UpdateStockRequest request
     ) {
-        return productoService.updateStock(id, stock);
+        return productoService.updateStock(id, request.getStock());
     }
 
     @DeleteMapping("/{id}")
