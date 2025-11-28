@@ -1,16 +1,16 @@
-# 🍃 Backend Huerto Hogar  
+#  Backend Huerto Hogar  
 API REST desarrollada en **Spring Boot 3**, utilizada por la aplicación móvil “Huerto Hogar”.  
 Este backend permite gestionar productos, usuarios, roles, autenticación con JWT, carrito, ventas y stock.
 
 ---
 
-## 👥 Integrantes del equipo
+##  Integrantes del equipo
 - **Moira Guzmán**  
 - **Briam Djesus**
 
 ---
 
-## 📘 Descripción del proyecto
+##  Descripción del proyecto
 Este proyecto corresponde al **backend** de la aplicación móvil *Huerto Hogar*, orientada a un público general que desea comprar insumos, frutas, verduras, lácteos y productos orgánicos.
 
 La API ofrece:
@@ -25,9 +25,9 @@ El backend sirve como proveedor de datos para la aplicación móvil Android desa
 
 ---
 
-# 🏗️ Arquitectura del proyecto
+#  Arquitectura del proyecto
 
-### ✔️ Tecnologías principales
+###  Tecnologías principales
 - **Java 17**  
 - **Spring Boot 3**  
 - **Maven**  
@@ -36,7 +36,7 @@ El backend sirve como proveedor de datos para la aplicación móvil Android desa
 - **Spring Security 6 (JWT)**  
 - **Lombok**
 
-### ✔️ Estructura de paquetes (clean architecture por capas)
+###  Estructura de paquetes (clean architecture por capas)
 cl.huertohogar.backend
 ├── config # Configuración global (CORS, Security)
 ├── controller # Controladores REST
@@ -51,9 +51,9 @@ Copiar código
 
 ---
 
-# 📦 Entidades principales
+#  Entidades principales
 
-### 🥕 Producto
+###  Producto
 - id_producto  
 - nombre  
 - descripcion  
@@ -62,28 +62,28 @@ Copiar código
 - categoria  
 - imageUrl  
 
-### 🛒 Carrito
+###  Carrito
 Carrito único del sistema:
 - items (ItemCarrito)  
 - total  
 
-### 🧺 ItemCarrito
+###  ItemCarrito
 - producto  
 - cantidad  
 - subtotal  
 
-### 🧾 Venta
+###  Venta
 - id_venta  
 - fecha  
 - total  
 - detalles (DetalleVenta)
 
-### 🧾 DetalleVenta
+###  DetalleVenta
 - producto  
 - cantidad  
 - subtotal  
 
-### 👤 Usuario
+###  Usuario
 - correo  
 - nombre  
 - rol  
@@ -91,7 +91,7 @@ Carrito único del sistema:
 
 ---
 
-# 🔐 Seguridad (JWT)
+#  Seguridad (JWT)
 El backend utiliza autenticación basada en **JWT**, con:
 
 - Login  
@@ -111,22 +111,22 @@ Endpoints protegidos:
 
 ---
 
-# 🍏 Funcionalidades implementadas
+#  Funcionalidades implementadas
 
-### ✔️ Gestión de productos
+###  Gestión de productos
 - Crear producto  
 - Editar producto  
 - Actualizar stock  
 - Eliminar producto  
 - Listar productos
 
-### ✔️ Carrito de compras
+###  Carrito de compras
 - Agregar item  
 - Eliminar item  
 - Vaciar carrito  
 - Listar carrito  
 
-### ✔️ Venta real
+###  Venta real
 - Finalizar compra  
 - Crear venta  
 - Descontar stock  
@@ -134,7 +134,7 @@ Endpoints protegidos:
 - Vaciar carrito  
 - Devolver ID de venta  
 
-### ✔️ Usuarios y roles
+###  Usuarios y roles
 - Registro  
 - Login  
 - Obtener usuario autenticado  
@@ -142,16 +142,16 @@ Endpoints protegidos:
 
 ---
 
-# 📡 Endpoints principales (resumen)
+#  Endpoints principales (resumen)
 
-### 🔑 Autenticación
+###  Autenticación
 POST /auth/login
 POST /auth/register
 
 shell
 Copiar código
 
-### 🥕 Productos
+###  Productos
 GET /api/productos
 POST /api/productos (ADMIN)
 PUT /api/productos/{id} (ADMIN)
@@ -161,7 +161,7 @@ DELETE /api/productos/{id} (ADMIN)
 shell
 Copiar código
 
-### 🛒 Carrito
+###  Carrito
 GET /api/carrito
 POST /api/carrito/add?idProducto=1&cantidad=1
 DELETE /api/carrito/item/{idItem}
@@ -171,7 +171,7 @@ POST /api/carrito/checkout # Genera venta real
 shell
 Copiar código
 
-### 🧾 Ventas (ADMIN)
+###  Ventas (ADMIN)
 GET /api/ventas
 
 yaml
@@ -179,7 +179,7 @@ Copiar código
 
 ---
 
-# 🛠️ Cómo ejecutar el backend
+#  Cómo ejecutar el backend
 
 ### 1. Clonar el repositorio
 git clone https://github.com/tuRepo/Backend-HuertoHogar
@@ -204,7 +204,7 @@ Copiar código
 
 ---
 
-# 📸 Capturas (pendiente agregar)
+#  Capturas (pendiente agregar)
 
 Puedes incluir capturas de:
 - Postman probando login  
@@ -215,10 +215,10 @@ Puedes incluir capturas de:
 
 ---
 
-# 🔗 Repositorio de la App Android
+#  Repositorio de la App Android
 (agregar cuando esté creado)
 
 ---
 
-# ✔️ Estado del proyecto
+#  Estado del proyecto
 Backend funcional y totalmente integrado con la App Android Huerto Hogar.
