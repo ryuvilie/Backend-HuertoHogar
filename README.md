@@ -240,7 +240,7 @@ Se recomienda incluir capturas de:
 
 # Repositorio de la App Android
 
-(Agregar enlace una vez disponible)
+https://github.com/DjesusBri/AppOrganica
 
 ---
 
