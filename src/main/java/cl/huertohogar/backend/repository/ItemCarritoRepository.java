@@ -9,5 +9,4 @@ public interface ItemCarritoRepository extends JpaRepository<ItemCarrito, Long> 
 
     List<ItemCarrito> findByCarrito(Carrito carrito);
 
-    void deleteAllByCarrito(Carrito carrito);
 }

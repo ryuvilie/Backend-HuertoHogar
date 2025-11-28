@@ -4,10 +4,9 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
-
+import cl.huertohogar.backend.dto.UpdateStockRequest;
 import cl.huertohogar.backend.model.Producto;
 import cl.huertohogar.backend.service.ProductoService;
-import cl.huertohogar.backend.dto.UpdateStockRequest;
 
 @RestController
 @RequestMapping("/api/productos")

@@ -1,5 +1,6 @@
 package cl.huertohogar.backend.controller;
 
+import cl.huertohogar.backend.dto.CheckoutResponseDTO;
 import cl.huertohogar.backend.dto.DetalleCarritoDTO;
 import cl.huertohogar.backend.service.CarritoService;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +42,15 @@ public class CarritoController {
     }
     // 5️⃣ FINALIZAR COMPRA → genera venta y descuenta stock
     @PostMapping("/checkout")
-    public ResponseEntity<?> checkout() {
-        Long idVenta = carritoService.finalizarCompra();
-        return ResponseEntity.ok("Compra realizada exitosamente. ID de venta: " + idVenta);
+    public ResponseEntity<CheckoutResponseDTO> checkout() {
+    Long idVenta = carritoService.finalizarCompra();
+
+    CheckoutResponseDTO response = new CheckoutResponseDTO(
+            idVenta,
+            "Compra realizada exitosamente"
+    );
+
+    return ResponseEntity.ok(response);
     }
 
 }
