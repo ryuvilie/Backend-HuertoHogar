@@ -60,6 +60,7 @@ public class SecurityConfig {
                 // GET productos: público (para catálogo)
                 .requestMatchers(HttpMethod.PATCH, "/api/productos/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/ventas/**").permitAll()
 
                 // POST/PUT/DELETE productos: solo ADMIN
                 .requestMatchers(HttpMethod.POST,   "/api/productos/**").hasRole("ADMIN")
