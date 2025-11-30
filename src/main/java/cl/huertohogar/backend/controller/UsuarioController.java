@@ -39,5 +39,16 @@ public class UsuarioController {
         usuarioService.eliminarUsuario(id);
         return ResponseEntity.noContent().build(); // 204 sin cuerpo
     }
+        @GetMapping("/perfil")
+        public ResponseEntity<UsuarioResponse> perfil() {
+            return ResponseEntity.ok(usuarioService.obtenerPerfilActual());
+        }
+
+        @PutMapping("/perfil")
+        public ResponseEntity<UsuarioResponse> actualizarPerfil(@RequestBody UsuarioResponse datos) {
+            return ResponseEntity.ok(usuarioService.actualizarPerfilActual(datos));
+        }
+
+
 
 }

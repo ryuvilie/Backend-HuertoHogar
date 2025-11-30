@@ -19,6 +19,16 @@ public class ProductoController {
     public List<Producto> getAll() {
         return productoService.getAll();
     }
+    @PatchMapping("/{id}/precio")
+    public Producto updatePrecio(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, Object> body
+    ) {
+        Double nuevoPrecio = Double.valueOf(body.get("precio").toString());
+        return productoService.updatePrecio(id, nuevoPrecio);
+    }
+
+
 
     @PostMapping
     public Producto create(@RequestBody Producto producto) {

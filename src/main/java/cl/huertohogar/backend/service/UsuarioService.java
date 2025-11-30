@@ -1,10 +1,12 @@
 package cl.huertohogar.backend.service;
 
 import cl.huertohogar.backend.dto.UsuarioResponse;
-import cl.huertohogar.backend.model.Rol;
-import cl.huertohogar.backend.model.Usuario;
 import cl.huertohogar.backend.repository.UsuarioRepository;
+import cl.huertohogar.backend.model.Usuario;
+import cl.huertohogar.backend.model.Rol;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,13 +22,16 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    // 🔹 Listar todos los usuarios
-    public List<UsuarioResponse> listarTodos() {
-        List<Usuario> usuarios = usuarioRepository.findAll();
+    // ===========================================================
+    // 🔹 MÓDULO ADMIN
+    // ===========================================================
 
-        return usuarios.stream()
+    public List<UsuarioResponse> listarTodos() {
+
+        return usuarioRepository.findAll()
+                .stream()
                 .map(u -> new UsuarioResponse(
-                        u.getId_usuario(),     // ✔ getter real
+                        u.getId_usuario(),
                         u.getNombre(),
                         u.getCorreo(),
                         u.getRol().name()
@@ -34,7 +39,6 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    // 🔹 Cambiar rol de un usuario
     public UsuarioResponse cambiarRol(Long idUsuario, String nuevoRol) {
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
@@ -43,17 +47,8 @@ public class UsuarioService {
                         "Usuario no encontrado"
                 ));
 
-        Rol rolEnum;
-        try {
-            rolEnum = Rol.valueOf(nuevoRol.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Rol inválido. Usa USER o ADMIN"
-            );
-        }
-
-        usuario.setRol(rolEnum);
+        Rol nuevo = Rol.valueOf(nuevoRol.toUpperCase());
+        usuario.setRol(nuevo);
         usuarioRepository.save(usuario);
 
         return new UsuarioResponse(
@@ -70,9 +65,62 @@ public class UsuarioService {
                     HttpStatus.NOT_FOUND,
                     "Usuario no encontrado"
             );
-        }   
-
-    usuarioRepository.deleteById(idUsuario);
+        }
+        usuarioRepository.deleteById(idUsuario);
     }
 
+
+    // ===========================================================
+    // 🔹 PERFIL (usuario autenticado)
+    // ===========================================================
+
+    public UsuarioResponse obtenerPerfilActual() {
+
+        String correo = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Usuario no encontrado"
+                        ));
+
+        return new UsuarioResponse(
+                usuario.getId_usuario(),
+                usuario.getNombre(),
+                usuario.getCorreo(),
+                usuario.getRol().name()
+        );
+    }
+
+    public UsuarioResponse actualizarPerfilActual(UsuarioResponse datos) {
+
+        String correoActual = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        Usuario usuario = usuarioRepository.findByCorreo(correoActual)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Usuario no encontrado"
+                        ));
+
+        // Solo se puede cambiar nombre y correo
+        usuario.setNombre(datos.getNombre());
+        usuario.setCorreo(datos.getCorreo());
+
+        usuarioRepository.save(usuario);
+
+        return new UsuarioResponse(
+                usuario.getId_usuario(),
+                usuario.getNombre(),
+                usuario.getCorreo(),
+                usuario.getRol().name()
+        );
+    }
 }

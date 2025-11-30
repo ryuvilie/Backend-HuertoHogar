@@ -21,6 +21,15 @@ public class ProductoService {
     public Producto create(Producto p) {
         return productoRepo.save(p);
     }
+public Producto updatePrecio(Long id, Double precio) {
+    Producto prod = productoRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+    prod.setPrecio(precio);
+    return productoRepo.save(prod);
+}
+
+
 
     public Producto update(Long id, Producto data) {
         Producto prod = productoRepo.findById(id)

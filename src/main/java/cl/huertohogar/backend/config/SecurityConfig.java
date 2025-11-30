@@ -19,104 +19,72 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-/**
- * Configuración principal de seguridad del proyecto.
- */
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // Filtro JWT creado previamente (se ejecuta en cada request)
     private final JwtAuthenticationFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            // 1️⃣ CORS para permitir app móvil / frontend
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-            // 2️⃣ CSRF desactivado (API stateless con JWT)
             .csrf(csrf -> csrf.disable())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // 3️⃣ Sin sesiones, todo por JWT
-            .sessionManagement(sm ->
-                sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-
-            // 4️⃣ Reglas de acceso
             .authorizeHttpRequests(auth -> auth
 
-                // --- RUTAS PÚBLICAS (SIN TOKEN) ---
-                .requestMatchers(
-                    "/auth/**",          // login y registro
-                    "/swagger-ui.html",
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**",
-                    "/api-docs/**"
-                ).permitAll()
+                // 🔓 PUBLICO
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**").permitAll()
 
-                // --- PRODUCTOS ---
-                // GET productos: público (para catálogo)
-                .requestMatchers(HttpMethod.PATCH, "/api/productos/**").permitAll()
+                // 🔓 PRODUCTOS: GET y PATCH precio/stock → público
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/ventas/**").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/api/productos/*/stock").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/api/productos/*/precio").permitAll()
 
-                // POST/PUT/DELETE productos: solo ADMIN
-                .requestMatchers(HttpMethod.POST,   "/api/productos/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT,    "/api/productos/**").hasRole("ADMIN")
+                // 🔒 PRODUCTOS: POST/PUT/DELETE solo ADMIN
+                .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
+
+                // 🛒 CARRITO siempre público
                 .requestMatchers("/api/carrito/**").permitAll()
+
+                // 🔓 VENTAS → PUBLICO (tanto GET como POST)
+                .requestMatchers(HttpMethod.GET, "/api/ventas/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/ventas/**").permitAll()
+
+                // 👤 USUARIOS → SOLO ADMIN
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
 
-                // --- CUALQUIER OTRA RUTA REQUIERE TOKEN ---
+                // 🔐 Cualquier otra cosa requiere token
                 .anyRequest().authenticated()
             )
 
-            // 5️⃣ Filtro JWT antes del filtro de usuario/clave
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /**
-     * Configuración CORS.
-     */
     @Bean
-public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration config = new CorsConfiguration();
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
 
-    config.setAllowedOrigins(List.of("*"));
+        config.setAllowedOrigins(List.of("*"));
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(false);
 
-    config.setAllowedMethods(List.of(
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH",
-        "OPTIONS"
-    ));
-
-    config.setAllowedHeaders(List.of("*"));
-    config.setAllowCredentials(false);
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", config);
-    return source;
-}
-
-
-    /**
-     * BCrypt como encriptador de contraseñas.
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
-    /**
-     * AuthenticationManager que usará Spring Security internamente.
-     */
+    @Bean
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
