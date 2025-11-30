@@ -1,61 +1,82 @@
 package cl.huertohogar.backend.service;
 
-import cl.huertohogar.backend.dto.DetalleVentaRequest;
 import cl.huertohogar.backend.dto.VentaRequest;
-import cl.huertohogar.backend.model.DetalleVenta;
-import cl.huertohogar.backend.model.Producto;
-import cl.huertohogar.backend.model.Venta;
-import cl.huertohogar.backend.repository.ProductoRepository;
-import cl.huertohogar.backend.repository.VentaRepository;
+import cl.huertohogar.backend.model.*;
+import cl.huertohogar.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class VentaService {
 
-    private final VentaRepository ventaRepository;
-    private final ProductoRepository productoRepository;
+    private final VentaRepository ventaRepo;
+    private final ProductoRepository productoRepo;
+    private final UsuarioRepository usuarioRepo;
+    private final DetalleVentaRepository detalleRepo;
 
-    // Obtener todas las ventas
-    public List<Venta> getAllVentas() {
-        return ventaRepository.findAll();
-    }
-
-    // Obtener por ID
-    public Venta getVentaById(Long idVenta) {
-        return ventaRepository.findById(idVenta)
-                .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
-    }
-
-    // Crear venta real desde frontend
+    // 🔥 Crear venta a partir del carrito
     public Venta crearVenta(VentaRequest request) {
 
         Venta venta = new Venta();
         venta.setFecha(LocalDate.now());
-        venta.setTotal(request.getTotal());
 
-        // Detalles
-        List<DetalleVenta> detalles = request.getDetalles().stream().map(d -> {
-            DetalleVenta det = new DetalleVenta();
+        // 🟢 Si viene idUsuario → asociar usuario
+        if (request.getIdUsuario() != null) {
+            Usuario u = usuarioRepo.findById(request.getIdUsuario())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            venta.setUsuario(u);
+        }
 
-            Producto producto = productoRepository.findById(d.getId_producto())
+        List<DetalleVenta> detalles = new ArrayList<>();
+        double total = 0.0;
+
+        // 🔥 Recorrer los items del carrito
+        for (VentaRequest.ItemCarrito item : request.getItems()) {
+
+            Producto prod = productoRepo.findById(item.getIdProducto())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
+            // 🔍 Validar stock
+            if (prod.getStock() < item.getCantidad()) {
+                throw new RuntimeException("Stock insuficiente para: " + prod.getNombre());
+            }
+
+            // ➖ Restar stock
+            prod.setStock(prod.getStock() - item.getCantidad());
+            productoRepo.save(prod);
+
+            // 🧾 Crear detalle
+            DetalleVenta det = new DetalleVenta();
+            det.setProducto(prod);
+            det.setCantidad(item.getCantidad());
+            det.setSubtotal(prod.getPrecio() * item.getCantidad());
             det.setVenta(venta);
-            det.setProducto(producto);
-            det.setCantidad(d.getCantidad());
-            det.setSubtotal(d.getSubtotal());
 
-            return det;
-        }).collect(Collectors.toList());
+            detalles.add(det);
+            total += det.getSubtotal();
+        }
 
+        venta.setTotal(total);
         venta.setDetalles(detalles);
 
-        return ventaRepository.save(venta);
+        // 💾 Guardar venta + detalles
+        Venta vGuardada = ventaRepo.save(venta);
+        detalleRepo.saveAll(detalles);
+
+        return vGuardada;
+    }
+
+    public Venta getVentaById(Long idVenta) {
+        return ventaRepo.findById(idVenta)
+                .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
+    }
+
+    public List<Venta> getAllVentas() {
+        return ventaRepo.findAll();
     }
 }

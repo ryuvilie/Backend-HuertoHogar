@@ -20,7 +20,11 @@ public class Venta {
     @Column(nullable = false)
     private Double total;
 
-    // Relación con DetalleVenta
+    // 🔥 NUEVO: relación opcional con usuario
+    @ManyToOne
+    @JoinColumn(name = "id_usuario")
+    private Usuario usuario;
+
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
     private List<DetalleVenta> detalles;
 }
