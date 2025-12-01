@@ -6,6 +6,9 @@ import cl.huertohogar.backend.model.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
-    Optional<Usuario> findByCorreo(String correo); // 🔥 NECESARIO
+    Optional<Usuario> findByCorreo(String correo);
+
+    Optional<Usuario> findByCorreoAndEnabledTrue(String correo);
+
     boolean existsByCorreo(String correo);
 }

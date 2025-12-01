@@ -4,8 +4,11 @@ import cl.huertohogar.backend.dto.DetalleCarritoDTO;
 import cl.huertohogar.backend.model.*;
 import cl.huertohogar.backend.repository.*;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -47,6 +50,10 @@ public class CarritoService {
         Producto producto = productoRepo.findById(idProducto)
                 .orElseThrow(() -> new RuntimeException("Producto no existe"));
 
+        if (!producto.isActivo()) {
+            throw new RuntimeException("El producto está desactivado y no se puede agregar al carrito");
+        }
+
         double subtotal = producto.getPrecio() * cantidad;
 
         ItemCarrito item = new ItemCarrito();
@@ -69,6 +76,7 @@ public class CarritoService {
 
         return itemRepo.findByCarrito(carrito)
                 .stream()
+                .filter(item -> item.getProducto().isActivo()) // no devolver inactivos
                 .map(item -> new DetalleCarritoDTO(
                         item.getId_item(),
                         item.getCantidad(),
@@ -123,53 +131,95 @@ public class CarritoService {
     }
 
     // =====================================================
-    // 🟦 FINALIZAR COMPRA (Checkout real)
+    // 🟦 FINALIZAR COMPRA (Checkout real – Android)
     // =====================================================
-    @Transactional
-    public Long finalizarCompra() {
+   // =====================================================
+// 🟦 FINALIZAR COMPRA (Checkout real – Android)
+// =====================================================
+@Transactional
+public Long finalizarCompra() {
 
-        Carrito carrito = getOrCreateCarrito();
-        List<ItemCarrito> items = itemRepo.findByCarrito(carrito);
+    Carrito carrito = getOrCreateCarrito();
+    List<ItemCarrito> items = itemRepo.findByCarrito(carrito);
 
-        if (items.isEmpty()) {
-            throw new RuntimeException("El carrito está vacío");
-        }
-
-        // 1️⃣ Crear venta
-        Venta venta = new Venta();
-        venta.setFecha(LocalDate.now());
-        venta.setTotal(carrito.getTotal());
-        venta = ventaRepo.save(venta);
-
-        // 2️⃣ Crear detalle_venta + descontar stock
-        for (ItemCarrito item : items) {
-
-            Producto prod = item.getProducto();
-
-            // Validar stock
-            if (prod.getStock() < item.getCantidad()) {
-                throw new RuntimeException("Stock insuficiente para: " + prod.getNombre());
-            }
-
-            // Descontar stock
-            prod.setStock(prod.getStock() - item.getCantidad());
-            productoRepo.save(prod);
-
-            // Crear detalle_venta
-            DetalleVenta dv = new DetalleVenta();
-            dv.setVenta(venta);
-            dv.setProducto(prod);
-            dv.setCantidad(item.getCantidad());
-            dv.setSubtotal(item.getSubtotal());
-            detalleVentaRepo.save(dv);
-        }
-
-        // 3️⃣ Vaciar carrito (misma lógica que clearCarrito)
-        itemRepo.deleteAll(items);
-        carrito.setTotal(0.0);
-        carritoRepo.save(carrito);
-
-        // 4️⃣ Devolver ID de la venta
-        return venta.getId_venta();
+    // 🔹 1) Validar que el carrito tenga items
+    if (items == null || items.isEmpty()) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "El carrito está vacío, no se puede finalizar la compra"
+        );
     }
+
+    // 🔹 2) Recalcular el total “por si acaso”
+    double total = items.stream()
+            .mapToDouble(ItemCarrito::getSubtotal)
+            .sum();
+
+    if (total <= 0) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "El total del carrito es 0, revisa los productos antes de comprar"
+        );
+    }
+
+    // 🔹 3) Crear la venta
+    Venta venta = new Venta();
+    venta.setFecha(LocalDate.now());
+    venta.setTotal(total);          // usamos el recalculado
+    // ⚠️ Si tu entidad Venta tiene usuario NOT NULL, aquí deberías setearlo.
+    // venta.setUsuario(usuario);   // si más adelante quieres asociar usuario
+
+    venta = ventaRepo.save(venta);
+
+    // 🔹 4) Recorrer items, validar y crear detalle_venta
+    for (ItemCarrito item : items) {
+
+        Producto prod = item.getProducto();
+
+        if (prod == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Hay un item en el carrito sin producto asociado"
+            );
+        }
+
+        // Producto inactivo
+        if (!prod.isActivo()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "El producto está desactivado: " + prod.getNombre()
+            );
+        }
+
+        // Stock insuficiente
+        if (prod.getStock() < item.getCantidad()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Stock insuficiente para: " + prod.getNombre()
+            );
+        }
+
+        // Descontar stock
+        prod.setStock(prod.getStock() - item.getCantidad());
+        productoRepo.save(prod);
+
+        // Crear detalle_venta
+        DetalleVenta dv = new DetalleVenta();
+        dv.setVenta(venta);
+        dv.setProducto(prod);
+        dv.setCantidad(item.getCantidad());
+        dv.setSubtotal(item.getSubtotal());
+
+        detalleVentaRepo.save(dv);
+    }
+
+    // 🔹 5) Vaciar carrito
+    itemRepo.deleteAll(items);
+    carrito.setTotal(0.0);
+    carritoRepo.save(carrito);
+
+    // 🔹 6) Devolver ID de la venta
+    return venta.getId_venta();
+}
+
 }

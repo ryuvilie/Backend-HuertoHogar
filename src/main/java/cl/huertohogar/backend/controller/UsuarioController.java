@@ -43,6 +43,12 @@ public class UsuarioController {
         public ResponseEntity<UsuarioResponse> perfil() {
             return ResponseEntity.ok(usuarioService.obtenerPerfilActual());
         }
+            @PutMapping("/{id}/desactivar")
+    public ResponseEntity<?> desactivarUsuario(@PathVariable Long id) {
+        usuarioService.eliminarUsuario(id);
+        return ResponseEntity.ok("Usuario desactivado");
+    }
+
 
         @PutMapping("/perfil")
         public ResponseEntity<UsuarioResponse> actualizarPerfil(@RequestBody UsuarioResponse datos) {

@@ -23,7 +23,7 @@ public class UsuarioService {
     }
 
     // ===========================================================
-    // 🔹 MÓDULO ADMIN
+    // 🔹 LISTAR USUARIOS
     // ===========================================================
 
     public List<UsuarioResponse> listarTodos() {
@@ -39,16 +39,18 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    // ===========================================================
+    // 🔹 CAMBIAR ROL
+    // ===========================================================
+
     public UsuarioResponse cambiarRol(Long idUsuario, String nuevoRol) {
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Usuario no encontrado"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
-        Rol nuevo = Rol.valueOf(nuevoRol.toUpperCase());
-        usuario.setRol(nuevo);
+        Rol rolNuevo = Rol.valueOf(nuevoRol.toUpperCase());
+        usuario.setRol(rolNuevo);
+
         usuarioRepository.save(usuario);
 
         return new UsuarioResponse(
@@ -59,16 +61,20 @@ public class UsuarioService {
         );
     }
 
-    public void eliminarUsuario(Long idUsuario) {
-        if (!usuarioRepository.existsById(idUsuario)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Usuario no encontrado"
-            );
-        }
-        usuarioRepository.deleteById(idUsuario);
-    }
+    // ===========================================================
+    // 🔹 ELIMINAR (LÓGICO)
+    // ===========================================================
 
+    public void eliminarUsuario(Long idUsuario) {
+
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuario no encontrado"
+                ));
+
+        usuario.setEnabled(false); // eliminación lógica
+        usuarioRepository.save(usuario);
+    }
 
     // ===========================================================
     // 🔹 PERFIL (usuario autenticado)
@@ -82,11 +88,8 @@ public class UsuarioService {
                 .getName();
 
         Usuario usuario = usuarioRepository.findByCorreo(correo)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "Usuario no encontrado"
-                        ));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
         return new UsuarioResponse(
                 usuario.getId_usuario(),
@@ -104,13 +107,9 @@ public class UsuarioService {
                 .getName();
 
         Usuario usuario = usuarioRepository.findByCorreo(correoActual)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "Usuario no encontrado"
-                        ));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
-        // Solo se puede cambiar nombre y correo
         usuario.setNombre(datos.getNombre());
         usuario.setCorreo(datos.getCorreo());
 

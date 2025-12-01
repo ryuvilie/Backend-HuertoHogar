@@ -3,27 +3,26 @@ package cl.huertohogar.backend.dto;
 import cl.huertohogar.backend.model.Venta;
 import lombok.Data;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Data
 public class VentaDTO {
 
-    private Long id_venta;
+    private Long id;
+    private LocalDate fecha;
     private Double total;
-    private String fecha;
+    private Long idUsuario;
+    private List<DetalleDTO> detalles;
 
-    // 🔥 Datos del usuario asociado a la venta (si existe)
-    private Long usuarioId;
-    private String usuarioNombre;
-    private String usuarioCorreo;
-
-    public VentaDTO(Venta venta) {
-        this.id_venta = venta.getId_venta();
-        this.total = venta.getTotal();
-        this.fecha = venta.getFecha().toString();
-
-        if (venta.getUsuario() != null) {
-            this.usuarioId = venta.getUsuario().getId_usuario();
-            this.usuarioNombre = venta.getUsuario().getNombre();
-            this.usuarioCorreo = venta.getUsuario().getCorreo();
-        }
+    public VentaDTO(Venta v) {
+        this.id = v.getId_venta();
+        this.fecha = v.getFecha();
+        this.total = v.getTotal();
+        this.idUsuario = v.getUsuario() != null ? v.getUsuario().getId_usuario() : null;
+        this.detalles = v.getDetalles()
+                .stream()
+                .map(DetalleDTO::new)
+                .toList();
     }
 }

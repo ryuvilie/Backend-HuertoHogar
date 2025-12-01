@@ -4,7 +4,9 @@ import cl.huertohogar.backend.dto.VentaRequest;
 import cl.huertohogar.backend.model.*;
 import cl.huertohogar.backend.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,38 +21,64 @@ public class VentaService {
     private final UsuarioRepository usuarioRepo;
     private final DetalleVentaRepository detalleRepo;
 
-    // 🔥 Crear venta a partir del carrito
     public Venta crearVenta(VentaRequest request) {
+
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El carrito está vacío");
+        }
 
         Venta venta = new Venta();
         venta.setFecha(LocalDate.now());
 
-        // 🟢 Si viene idUsuario → asociar usuario
+        // Usuario asociado (opcional)
         if (request.getIdUsuario() != null) {
             Usuario u = usuarioRepo.findById(request.getIdUsuario())
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Usuario no encontrado"
+                    ));
+
+            if (!u.isEnabled()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "El usuario está desactivado"
+                );
+            }
+
             venta.setUsuario(u);
         }
 
         List<DetalleVenta> detalles = new ArrayList<>();
         double total = 0.0;
 
-        // 🔥 Recorrer los items del carrito
         for (VentaRequest.ItemCarrito item : request.getItems()) {
 
             Producto prod = productoRepo.findById(item.getIdProducto())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Producto no encontrado (ID: " + item.getIdProducto() + ")"
+                    ));
 
-            // 🔍 Validar stock
-            if (prod.getStock() < item.getCantidad()) {
-                throw new RuntimeException("Stock insuficiente para: " + prod.getNombre());
+            // VALIDACIÓN DE PRODUCTO ACTIVO
+            if (!prod.isActivo()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "El producto está desactivado: " + prod.getNombre()
+                );
             }
 
-            // ➖ Restar stock
+            if (prod.getStock() < item.getCantidad()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Stock insuficiente para: " + prod.getNombre()
+                );
+            }
+
+            // Actualizar stock
             prod.setStock(prod.getStock() - item.getCantidad());
             productoRepo.save(prod);
 
-            // 🧾 Crear detalle
+            // Crear detalle
             DetalleVenta det = new DetalleVenta();
             det.setProducto(prod);
             det.setCantidad(item.getCantidad());
@@ -64,7 +92,6 @@ public class VentaService {
         venta.setTotal(total);
         venta.setDetalles(detalles);
 
-        // 💾 Guardar venta + detalles
         Venta vGuardada = ventaRepo.save(venta);
         detalleRepo.saveAll(detalles);
 
@@ -73,7 +100,8 @@ public class VentaService {
 
     public Venta getVentaById(Long idVenta) {
         return ventaRepo.findById(idVenta)
-                .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Venta no encontrada"));
     }
 
     public List<Venta> getAllVentas() {

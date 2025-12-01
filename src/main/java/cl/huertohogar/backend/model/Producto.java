@@ -1,7 +1,6 @@
 package cl.huertohogar.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -30,4 +29,8 @@ public class Producto {
     private String imageUrl;
 
     private String categoria;
+
+    // NUEVO: desactivación lógica
+    @Column(nullable = false)
+    private boolean activo = true;
 }

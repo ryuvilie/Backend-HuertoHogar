@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/ventas")
@@ -18,8 +17,8 @@ public class VentaController {
 
     private final VentaService ventaService;
 
-    @PostMapping
-    public ResponseEntity<VentaDTO> crearVenta(@RequestBody VentaRequest request) {
+    @PostMapping("/finalizar")
+    public ResponseEntity<VentaDTO> finalizarCompra(@RequestBody VentaRequest request) {
         Venta venta = ventaService.crearVenta(request);
         return ResponseEntity.ok(new VentaDTO(venta));
     }
@@ -27,10 +26,7 @@ public class VentaController {
     @GetMapping
     public ResponseEntity<List<VentaDTO>> getAllVentas() {
         return ResponseEntity.ok(
-                ventaService.getAllVentas()
-                        .stream()
-                        .map(VentaDTO::new)
-                        .collect(Collectors.toList())
+            ventaService.getAllVentas().stream().map(VentaDTO::new).toList()
         );
     }
 

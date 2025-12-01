@@ -20,10 +20,10 @@ public class Venta {
     @Column(nullable = false)
     private Double total;
 
-    // 🔥 NUEVO: relación opcional con usuario
-    @ManyToOne
-    @JoinColumn(name = "id_usuario")
-    private Usuario usuario;
+@ManyToOne
+@JoinColumn(name = "id_usuario", nullable = true)  // 👈 esto debe ser true si permites compras sin usuario
+private Usuario usuario;
+
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
     private List<DetalleVenta> detalles;
