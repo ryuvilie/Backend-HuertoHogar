@@ -38,4 +38,5 @@ public class VentaController {
     public ResponseEntity<VentaDTO> getVentaById(@PathVariable Long id) {
         return ResponseEntity.ok(new VentaDTO(ventaService.getVentaById(id)));
     }
+    
 }

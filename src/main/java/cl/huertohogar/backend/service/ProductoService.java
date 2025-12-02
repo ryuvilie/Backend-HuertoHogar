@@ -14,22 +14,23 @@ public class ProductoService {
 
     private final ProductoRepository productoRepo;
 
+    // ✔ SOLO productos activos para catálogo + admin
     public List<Producto> getAll() {
-        return productoRepo.findAll();
+        return productoRepo.findByActivoTrue();
     }
 
     public Producto create(Producto p) {
+        p.setActivo(true); // aseguramos que siempre se creen activos
         return productoRepo.save(p);
     }
-public Producto updatePrecio(Long id, Double precio) {
-    Producto prod = productoRepo.findById(id)
-            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-    prod.setPrecio(precio);
-    return productoRepo.save(prod);
-}
+    public Producto updatePrecio(Long id, Double precio) {
+        Producto prod = productoRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-
+        prod.setPrecio(precio);
+        return productoRepo.save(prod);
+    }
 
     public Producto update(Long id, Producto data) {
         Producto prod = productoRepo.findById(id)
@@ -45,7 +46,6 @@ public Producto updatePrecio(Long id, Double precio) {
         return productoRepo.save(prod);
     }
 
-    // ✔ CORREGIDO: actualiza solo stock
     public Producto updateStock(Long id, Integer stock) {
         Producto prod = productoRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
@@ -54,7 +54,12 @@ public Producto updatePrecio(Long id, Double precio) {
         return productoRepo.save(prod);
     }
 
+    // ✔ NUEVO — eliminación lógica
     public void delete(Long id) {
-        productoRepo.deleteById(id);
+        Producto prod = productoRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        prod.setActivo(false);
+        productoRepo.save(prod);
     }
 }

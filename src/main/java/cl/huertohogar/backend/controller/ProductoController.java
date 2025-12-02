@@ -15,10 +15,12 @@ public class ProductoController {
 
     private final ProductoService productoService;
 
+    // ✔ SOLO productos activos
     @GetMapping
     public List<Producto> getAll() {
         return productoService.getAll();
     }
+
     @PatchMapping("/{id}/precio")
     public Producto updatePrecio(
             @PathVariable Long id,
@@ -27,8 +29,6 @@ public class ProductoController {
         Double nuevoPrecio = Double.valueOf(body.get("precio").toString());
         return productoService.updatePrecio(id, nuevoPrecio);
     }
-
-
 
     @PostMapping
     public Producto create(@RequestBody Producto producto) {
@@ -51,9 +51,10 @@ public class ProductoController {
         return productoService.updateStock(id, request.getStock());
     }
 
+    // ✔ eliminación lógica
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         productoService.delete(id);
-        return ResponseEntity.ok("Producto eliminado");
+        return ResponseEntity.ok("Producto eliminado (lógicamente)");
     }
 }
