@@ -10,20 +10,11 @@ public class VentaDTO {
     private Double total;
     private String fecha;
 
-    // 🔥 Datos del usuario asociado a la venta (si existe)
-    private Long usuarioId;
-    private String usuarioNombre;
-    private String usuarioCorreo;
+    // Eliminamos los datos del usuario, ya que ya no se incluyen en la venta
 
     public VentaDTO(Venta venta) {
         this.id_venta = venta.getId_venta();
         this.total = venta.getTotal();
         this.fecha = venta.getFecha().toString();
-
-        if (venta.getUsuario() != null) {
-            this.usuarioId = venta.getUsuario().getId_usuario();
-            this.usuarioNombre = venta.getUsuario().getNombre();
-            this.usuarioCorreo = venta.getUsuario().getCorreo();
-        }
     }
 }

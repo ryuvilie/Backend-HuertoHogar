@@ -3,7 +3,6 @@ package cl.huertohogar.backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
-import java.util.List;
 
 @Data
 @Entity
@@ -19,12 +18,4 @@ public class Venta {
 
     @Column(nullable = false)
     private Double total;
-
-    // 🔥 NUEVO: relación opcional con usuario
-    @ManyToOne
-    @JoinColumn(name = "id_usuario")
-    private Usuario usuario;
-
-    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
-    private List<DetalleVenta> detalles;
 }

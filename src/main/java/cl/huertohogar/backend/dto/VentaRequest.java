@@ -1,15 +1,13 @@
 package cl.huertohogar.backend.dto;
 
 import lombok.Data;
-
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
 public class VentaRequest {
 
-    // 👇 opcional: solo si el usuario está loggeado
-    private Long idUsuario;
-
+    private LocalDate fecha;
     private List<ItemCarrito> items;
 
     @Data
