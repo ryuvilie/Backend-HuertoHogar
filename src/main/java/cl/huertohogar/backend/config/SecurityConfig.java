@@ -37,30 +37,22 @@ public class SecurityConfig {
 
                 // 🔓 PUBLICO
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers(
-                    "/swagger-ui.html",
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**",
-                    "/api-docs/**"
-                ).permitAll()
+                .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**").permitAll()
 
-                // 🔓 PRODUCTOS: GET y PATCH → público (catálogo y edición rápida desde front)
+                // 🔓 PRODUCTOS: GET y PATCH precio/stock → público
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
                 .requestMatchers(HttpMethod.PATCH, "/api/productos/*/stock").permitAll()
                 .requestMatchers(HttpMethod.PATCH, "/api/productos/*/precio").permitAll()
 
-                // 🟢 POR AHORA: POST productos también público
-                // (para que puedas crear productos sin pelear con el token/rol)
-                .requestMatchers(HttpMethod.POST, "/api/productos/**").permitAll()
-
-                // 🔒 PUT/DELETE productos: solo ADMIN
+                // 🔒 PRODUCTOS: POST/PUT/DELETE solo ADMIN
+                .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
 
                 // 🛒 CARRITO siempre público
                 .requestMatchers("/api/carrito/**").permitAll()
 
-                // 🔓 VENTAS → PUBLICO (GET + POST)
+                // 🔓 VENTAS → PUBLICO (tanto GET como POST)
                 .requestMatchers(HttpMethod.GET, "/api/ventas/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/ventas/**").permitAll()
 
@@ -91,9 +83,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
