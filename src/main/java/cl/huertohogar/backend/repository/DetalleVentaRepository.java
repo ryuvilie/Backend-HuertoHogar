@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface DetalleVentaRepository extends JpaRepository<DetalleVenta, Long> {
 
-    // 🔹 Para obtener los detalles de una venta específica
+    // Para obtener los detalles de una venta específica
     List<DetalleVenta> findByVenta(Venta venta);
 }

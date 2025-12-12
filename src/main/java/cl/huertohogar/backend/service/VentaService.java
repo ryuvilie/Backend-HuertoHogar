@@ -6,7 +6,7 @@ import cl.huertohogar.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public class VentaService {
 
         // Crear la venta
         Venta venta = new Venta();
-        venta.setFecha(request.getFecha());
+        venta.setFecha(LocalDate.now());  // Usamos la fecha actual
         double total = 0.0;
 
         // Recorrer los items del carrito
@@ -42,9 +42,8 @@ public class VentaService {
             total += prod.getPrecio() * item.getCantidad();
         }
 
-        venta.setTotal(total);
-
         // Guardar la venta
-        return ventaRepo.save(venta);
+        venta.setTotal(total);
+        return ventaRepo.save(venta);  // Guardar solo la venta con el total
     }
 }

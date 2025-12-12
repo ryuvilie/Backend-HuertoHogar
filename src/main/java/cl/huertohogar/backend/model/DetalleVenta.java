@@ -10,19 +10,18 @@ public class DetalleVenta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_detalle_venta;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "id_venta", nullable = false)
-    private Venta venta;
-
-    @ManyToOne
-    @JoinColumn(name = "id_producto", nullable = false)
+    @JoinColumn(name = "id_producto")
     private Producto producto;
 
-    @Column(nullable = false)
-    private Integer cantidad;
+    @ManyToOne
+    @JoinColumn(name = "id_venta")
+    private Venta venta;
 
-    @Column(nullable = false)
+    private Integer cantidad;
     private Double subtotal;
+
+    // Getters y setters
 }

@@ -14,9 +14,10 @@ public class VentaController {
 
     private final VentaService ventaService;
 
+    // Endpoint para crear una venta con POST
     @PostMapping
     public ResponseEntity<Venta> crearVenta(@RequestBody VentaRequest request) {
-        Venta venta = ventaService.crearVenta(request);
-        return ResponseEntity.ok(venta);
+        Venta venta = ventaService.crearVenta(request); // Llamada al servicio para crear la venta
+        return ResponseEntity.ok(venta);  // Retorna la venta con total y fecha
     }
 }
