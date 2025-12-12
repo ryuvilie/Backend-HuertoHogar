@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import cl.huertohogar.backend.dto.UpdateStockRequest;
 import cl.huertohogar.backend.model.Producto;
 import cl.huertohogar.backend.service.ProductoService;
+import cl.huertohogar.backend.dto.ComentarioRequestDTO;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -27,6 +29,21 @@ public class ProductoController {
         Double nuevoPrecio = Double.valueOf(body.get("precio").toString());
         return productoService.updatePrecio(id, nuevoPrecio);
     }
+    @PostMapping("/{id}/comentario")
+public ResponseEntity<?> comentarProducto(
+        @PathVariable Long id,
+        @RequestBody ComentarioRequestDTO req
+) {
+    // ✅ No se guarda en BD, solo validación mínima
+    if (req.getTexto() == null || req.getTexto().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body("El texto no puede estar vacío");
+    }
+    if (req.getNota() == null || req.getNota() < 1 || req.getNota() > 5) {
+        return ResponseEntity.badRequest().body("La nota debe estar entre 1 y 5");
+    }
+
+    return ResponseEntity.ok("Comentario recibido");
+}
 
 
 

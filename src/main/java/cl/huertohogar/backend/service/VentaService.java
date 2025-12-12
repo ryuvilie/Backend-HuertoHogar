@@ -15,36 +15,55 @@ public class VentaService {
     private final VentaRepository ventaRepo;
     private final ProductoRepository productoRepo;
 
-    // Crear venta a partir del carrito
+    // 🟢 Crear venta (manual / vendedor)
     public Venta crearVenta(VentaRequest request) {
 
-        // Crear la venta
         Venta venta = new Venta();
         venta.setFecha(request.getFecha());
         double total = 0.0;
 
-        // Recorrer los items del carrito
         for (VentaRequest.ItemCarrito item : request.getItems()) {
 
             Producto prod = productoRepo.findById(item.getIdProducto())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-            // Validar stock
             if (prod.getStock() < item.getCantidad()) {
                 throw new RuntimeException("Stock insuficiente para: " + prod.getNombre());
             }
 
-            // Descontar stock
             prod.setStock(prod.getStock() - item.getCantidad());
             productoRepo.save(prod);
 
-            // Calcular el total
             total += prod.getPrecio() * item.getCantidad();
         }
 
         venta.setTotal(total);
+        return ventaRepo.save(venta);
+    }
 
-        // Guardar la venta
+    // 🟢 Listar ventas
+    public List<Venta> listarVentas() {
+        return ventaRepo.findAll();
+    }
+
+    // 🟢 Editar venta (recalcula total)
+    public Venta editarVenta(Long id, VentaRequest request) {
+
+        Venta venta = ventaRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venta no existe"));
+
+        venta.setFecha(request.getFecha());
+        double total = 0.0;
+
+        for (VentaRequest.ItemCarrito item : request.getItems()) {
+
+            Producto prod = productoRepo.findById(item.getIdProducto())
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+            total += prod.getPrecio() * item.getCantidad();
+        }
+
+        venta.setTotal(total);
         return ventaRepo.save(venta);
     }
 }

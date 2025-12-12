@@ -13,9 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.*;
 
 import java.util.List;
 
@@ -39,27 +37,35 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**").permitAll()
 
-                // 🔓 PRODUCTOS: GET y PATCH precio/stock → público
+                // 🔓 PRODUCTOS: GET → público
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
-                .requestMatchers(HttpMethod.PATCH, "/api/productos/*/stock").permitAll()
-                .requestMatchers(HttpMethod.PATCH, "/api/productos/*/precio").permitAll()
 
-                // 🔒 PRODUCTOS: POST/PUT/DELETE solo ADMIN
+                // ✅ SOLO CLIENTE puede comentar productos
+                .requestMatchers(HttpMethod.POST, "/api/productos/*/comentario")
+                    .hasRole("CLIENTE")
+
+                // 🔒 PRODUCTOS: ADMIN
                 .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
 
-                // 🛒 CARRITO siempre público
+                // 🛒 CARRITO (checkout público)
                 .requestMatchers("/api/carrito/**").permitAll()
 
-                // 🔓 VENTAS → PUBLICO (tanto GET como POST)
-                .requestMatchers(HttpMethod.GET, "/api/ventas/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/ventas/**").permitAll()
+                // 🧾 VENTAS INTERNAS (VENDEDOR / ADMIN)
+                .requestMatchers(HttpMethod.GET, "/api/ventas/**")
+                    .hasAnyRole("ADMIN", "VENDEDOR")
+                .requestMatchers(HttpMethod.POST, "/api/ventas/**")
+                    .hasAnyRole("ADMIN", "VENDEDOR")
+                .requestMatchers(HttpMethod.PUT, "/api/ventas/**")
+                    .hasAnyRole("ADMIN", "VENDEDOR")
+                .requestMatchers(HttpMethod.DELETE, "/api/ventas/**")
+                    .hasRole("ADMIN")
 
-                // 👤 USUARIOS → SOLO ADMIN
+                // 👤 USUARIOS
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
 
-                // 🔐 Cualquier otra cosa requiere token
+                // 🔐 RESTO
                 .anyRequest().authenticated()
             )
 
@@ -71,7 +77,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOrigins(List.of("*"));
         config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
@@ -83,7 +88,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)

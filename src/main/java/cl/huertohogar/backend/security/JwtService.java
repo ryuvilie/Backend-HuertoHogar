@@ -62,12 +62,8 @@ public class JwtService {
         return v == null ? null : v.toString();
     }
 
-    /**
-     * Verifica si el token es válido:
-     * - firma correcta
-     * - no expirado
-     * - formato correcto
-     */
+
+
     public boolean isValid(String token) {
         try {
             parse(token);  // si falla, lanza excepción

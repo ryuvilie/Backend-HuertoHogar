@@ -4,6 +4,8 @@ import cl.huertohogar.backend.dto.DetalleCarritoDTO;
 import cl.huertohogar.backend.model.*;
 import cl.huertohogar.backend.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,9 @@ public class CarritoService {
     // Repos de ventas
     private final VentaRepository ventaRepo;
     private final DetalleVentaRepository detalleVentaRepo;
+
+    // ✅ Para cambiar rol USER -> CLIENTE al comprar
+    private final UsuarioRepository usuarioRepository;
 
     // ----------------------------------------------------
     // 🟩 Obtener o crear el único carrito del sistema
@@ -101,7 +106,7 @@ public class CarritoService {
         // 1) Traemos los items del carrito
         List<ItemCarrito> items = itemRepo.findByCarrito(carrito);
 
-        // 2) Los borramos con deleteAll (dentro de la transacción)
+        // 2) Los borramos (dentro de la transacción)
         itemRepo.deleteAll(items);
 
         // 3) Reseteamos el total y guardamos el carrito
@@ -164,7 +169,21 @@ public class CarritoService {
             detalleVentaRepo.save(dv);
         }
 
-        // 3️⃣ Vaciar carrito (misma lógica que clearCarrito)
+        // ✅ 2.5) Si el usuario autenticado es USER → pasarlo a CLIENTE
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+
+            String correo = auth.getName(); // username = correo (UsuarioDetails#getUsername)
+
+            usuarioRepository.findByCorreo(correo).ifPresent(u -> {
+                if (u.getRol() == Rol.USER) {
+                    u.setRol(Rol.CLIENTE);
+                    usuarioRepository.save(u);
+                }
+            });
+        }
+
+        // 3️⃣ Vaciar carrito
         itemRepo.deleteAll(items);
         carrito.setTotal(0.0);
         carritoRepo.save(carrito);
