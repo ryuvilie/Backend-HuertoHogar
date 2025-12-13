@@ -35,30 +35,40 @@ public class SecurityConfig {
 
                 // 🔓 PUBLICO
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**").permitAll()
+                .requestMatchers(
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/api-docs/**"
+                ).permitAll()
 
-                // 🔓 PRODUCTOS: GET → público
+                // 🔓 PRODUCTOS
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
 
-                // ✅ SOLO CLIENTE puede comentar productos
+                // ⭐ COMENTARIOS SOLO CLIENTE
                 .requestMatchers(HttpMethod.POST, "/api/productos/*/comentario")
                     .hasRole("CLIENTE")
 
-                // 🔒 PRODUCTOS: ADMIN
+                // 🔒 PRODUCTOS ADMIN
                 .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
 
-                // 🛒 CARRITO (checkout público)
+                // 🛒 CARRITO + CHECKOUT (CREA VENTA)
+                // 👉 cualquier usuario puede finalizar compra
                 .requestMatchers("/api/carrito/**").permitAll()
 
-                // 🧾 VENTAS INTERNAS (VENDEDOR / ADMIN)
+                // 🧾 VENTAS
+                // Crear venta: viene del carrito → permitido
+                .requestMatchers(HttpMethod.POST, "/api/ventas/**").permitAll()
+
+                // Ver / gestionar ventas: VENDEDOR o ADMIN
                 .requestMatchers(HttpMethod.GET, "/api/ventas/**")
-                    .hasAnyRole("ADMIN", "VENDEDOR")
-                .requestMatchers(HttpMethod.POST, "/api/ventas/**")
                     .hasAnyRole("ADMIN", "VENDEDOR")
                 .requestMatchers(HttpMethod.PUT, "/api/ventas/**")
                     .hasAnyRole("ADMIN", "VENDEDOR")
+
+                // Eliminar ventas: solo ADMIN
                 .requestMatchers(HttpMethod.DELETE, "/api/ventas/**")
                     .hasRole("ADMIN")
 
