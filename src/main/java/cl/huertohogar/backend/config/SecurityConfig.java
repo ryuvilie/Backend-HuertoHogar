@@ -62,15 +62,14 @@ public class SecurityConfig {
                 // Crear venta: viene del carrito → permitido
                 .requestMatchers(HttpMethod.POST, "/api/ventas/**").permitAll()
 
-                // Ver / gestionar ventas: VENDEDOR o ADMIN
-                .requestMatchers(HttpMethod.GET, "/api/ventas/**")
-                    .hasAnyRole("ADMIN", "VENDEDOR")
-                .requestMatchers(HttpMethod.PUT, "/api/ventas/**")
-                    .hasAnyRole("ADMIN", "VENDEDOR")
+                // Ver ventas: permitir acceso público (temporal para frontend dev)
+                .requestMatchers(HttpMethod.GET, "/api/ventas/**").permitAll()
+
+                // Gestionar ventas (editar/eliminar): VENDEDOR o ADMIN
+                .requestMatchers(HttpMethod.PUT, "/api/ventas/**").hasAnyRole("ADMIN", "VENDEDOR")
 
                 // Eliminar ventas: solo ADMIN
-                .requestMatchers(HttpMethod.DELETE, "/api/ventas/**")
-                    .hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/ventas/**").hasRole("ADMIN")
 
                 // 👤 USUARIOS
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
